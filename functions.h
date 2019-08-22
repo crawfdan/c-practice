@@ -30,5 +30,6 @@ typedef struct{
 
 /* function prototypes */
 void initializeDeck(Card * const myDeck, const char * myFace[], const char * mySuit[]);
+void printDeck(Card * const myDeck);
 
 #endif

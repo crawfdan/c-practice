@@ -8,7 +8,6 @@ int main(void)
 
 	Player p1;
 	Player dealer;
-	int i;
 
 	const char *face[] = {"Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Jack", "Queen", "King", "Ace"};
 
@@ -20,11 +19,8 @@ int main(void)
 	srand(time(0));
 
 	initializeDeck(deck, face, suit);
-
-	for (i = 0; i < 52; i++)
-	{
-		printf("%s of %s\n", deck[i].face, deck[i].suit);
-	}
+	//test that the deck has been initialized correctly
+	printDeck(deck);
 
 	return 0;
 }

@@ -1,3 +1,5 @@
+#include <stdio.h>
+#include <stdlib.h>
 #include "functions.h"
 
 // func name: initializeDeck
@@ -14,4 +16,18 @@ void initializeDeck(Card * const myDeck, const char * myFace[], const char * myS
 		myDeck[i].face = myFace[i % 13];
 		myDeck[i].suit = mySuit[i / 13];
 	}
+}
+
+// func name: printDeck
+// Summary: Prints the current deck
+// Params myDeck: deck array
+void printDeck(Card * const myDeck)
+{
+	int i;
+
+	for (i = 0; i < 52; i++)
+	{
+		printf("%s of %s\n", myDeck[i].face, myDeck[i].suit);
+	}
+
 }
