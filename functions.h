@@ -4,6 +4,9 @@
 #define DECK_SIZE 52
 #define HAND_SIZE 5
 
+#define NUM_FACES 13
+#define NUM_SUITS 4
+
 typedef enum
 {
 	InvalidEnum = -1,
@@ -20,16 +23,16 @@ typedef enum
 	NumEnums
 }Score;
 
-typedef struct{
-	const char *face;
-	const char *suit;
-	struct Card *nextPtr;
-}Card;
+typedef struct Card Card;
 
-typedef Card *DeckPtr;
+struct Card{
+	char *face;
+	char *suit;
+	Card* nextPtr;
+};
 
 typedef struct{
-	Card hand[5];
+	Card hand[HAND_SIZE];
 	Score handScore;
 }Player;
 
@@ -37,8 +40,10 @@ typedef struct{
 
 
 /* function prototypes */
-void initializeDeck(Card * const myDeck, const char * myFace[], const char * mySuit[]);
-void printDeck(Card * const myDeck);
-void shuffleDeck(Card * const myDeck);
+void initializeDeck(Card* myDeck, char* faceNames[], char* suitNames[]);
+void printCards(Card* topCard);
+bool isEmpty(Card* topOfDeck);
+void dealCard(Card* topOfDeck, Card* hand, int handSize);
+void discardCard(Card* bottomOfDeck, Card* hand, int index);
 
 #endif
