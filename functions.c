@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <assert.h>
+#include <string.h>
 #include "functions.h"
 
 // func name: initializeDeck
@@ -12,13 +13,14 @@
 void initializeDeck(Card* myDeck, char* faceNames[], char* suitNames[])
 {
 	assert(myDeck != NULL);
+
 	Card temp;
 	int i;
 	for (i = 0; i < DECK_SIZE; i++)
 	{
 		myDeck[i].face = faceNames[i % NUM_FACES];
 		myDeck[i].suit = suitNames[i / NUM_FACES];
-		myDeck[i].nextPtr = NULL;
+		//myDeck[i].nextPtr = NULL;
 
 		if (i > 0)
 		{
@@ -32,6 +34,7 @@ void initializeDeck(Card* myDeck, char* faceNames[], char* suitNames[])
 	{
 		j = rand() % DECK_SIZE;
 
+	//change only face and suit values to keep nextPtr in order
 		temp.face = myDeck[i].face;
 		temp.suit = myDeck[i].suit;
 
@@ -43,25 +46,43 @@ void initializeDeck(Card* myDeck, char* faceNames[], char* suitNames[])
 	}
 }
 
+int getFaceValue(char *str)
+{
+	char* face[NUM_FACES] = {"Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Jack", "Queen", "King", "Ace"};
+	assert(str != NULL);
+	int i;
+	for (i=0; i < NUM_FACES; i++)
+	{
+		if (strcmp(str, &(face[i][0])) == 0) 
+		{
+			return i;
+		}
+	}
+	printf("\nCould not determine card face value.\n");
+	return -1;
+}
+
 // func name: printDeck
 // Summary: Prints the current deck
 // Params myDeck: deck head pointer
 void printCards(Card* topCard)
 {
 	int i = 1;
-	if (topCard->nextPtr == NULL)
+	if ((topCard->face == NULL) && (topCard->suit == NULL))
 	{
-		printf("The deck is empty.\n\n");
+		printf("The deck or hand is empty.\n\n");
 	}
-	else 
+	else
 	{
-		while(topCard != NULL)
+		Card* cardViewer = topCard;
+		while(cardViewer != NULL)
 		{
-			printf("%d: %s of %s\n", i, topCard->face, topCard->suit);
-			topCard = topCard->nextPtr;
+			printf("%d: %s of %s\n", i, cardViewer->face, cardViewer->suit);
+			cardViewer = cardViewer->nextPtr;
 			i++;
 			
 		}
+		return;
 	}
 	
 }
@@ -111,60 +132,98 @@ bool isEmpty(Card* topOfDeck)
 // }
 
 
-void dealCard(Card* topOfDeck, Card* hand, int handSize)
+void dealCard(Card** topOfDeck, Card** hand, int handSize)
 {
-	assert(topOfDeck != NULL);
+	assert((*topOfDeck) != NULL);
 	assert(handSize < HAND_SIZE);
-	assert(handSize > 0);
-	assert((handSize == 0) && (hand == NULL));
+	assert(handSize >= 0);
 
 	//if hand is full
 	if(handSize == HAND_SIZE)
 	{
 		return;
 	}
+	
 	//temporary topCard stores head pointer
-	Card* topCard = topOfDeck;
-	topOfDeck = topOfDeck->nextPtr;
-	topCard->nextPtr = NULL;
+	Card* topCard = *topOfDeck;
+	printf("Start:\n");
+	printf("\n%s", topCard->face);
+	printf("\n%s", topCard->nextPtr->face);
+	printf("\n%s", (*topOfDeck)->face);
 
+	*topOfDeck = (*topOfDeck)->nextPtr;
+	topCard->nextPtr = NULL;
+	printf("\ntopCard:%s , topOfDeck: %s \n", topCard->face,
+											(*topOfDeck)->face);
+	//										(*topOfDeck)->nextPtr->face
+	//topCard->nextPtr = NULL;
+	
+	
+	printf("%s: %s of %s\n", __FUNCTION__, topCard->face, topCard->suit);
 	//if hand is empty
-	if(hand == NULL)
+	if(handSize == 0)
 	{
-		hand = topCard;
+		printf("a\n");
+		(*hand)[0] = *topCard;
 	}
 	//if hand is not empty
 	else
 	{
-		Card* handViewer = hand;
+		printf("b\n");
+		Card* handViewer = *hand;
 		int i;
+		// find where the card belongs
 		for(i = 0; i < handSize; i++)
 		{
-			if(topCard->face < handViewer->face)
+			printf("\n%d\t%d\n", getFaceValue(topCard->face), getFaceValue(handViewer->face));
+			if(getFaceValue(topCard->face) < getFaceValue(handViewer->face))
 			{
 				break;
 			}
-			handViewer = handViewer->nextPtr;
+
+			else if (handViewer->nextPtr != NULL)
+			{
+				printf("c\n");
+				handViewer = handViewer->nextPtr;
+			}
+
 		}
-		//if inserting to front of hand
+		// if inserting to front of hand
 		if (i == 0)
 		{
-			hand = topCard;
-			hand->nextPtr = handViewer;
+		printf("d\n");
+		topCard->nextPtr = *hand;
+		*hand = topCard;
+			//topCard->nextPtr = handViewer;
 		}
-		//if inserting in middle
+		// if inserting at end
+		else if (i == handSize)
+		{
+			//(*hand)[i-1].nextPtr = topCard;
+			printf("e\n");
+			Card* tempCard = *hand;
+			while(tempCard->nextPtr != NULL)
+			{
+				tempCard = tempCard->nextPtr;
+			}
+			tempCard->nextPtr = topCard;
+		}
+		// if inserting in middle
 		else if (i < handSize)
 		{
-			hand[i-1].nextPtr = topCard;
-			topCard->nextPtr = hand[i].nextPtr;
+			printf("f\n");
+			topCard->nextPtr = handViewer;
+			handViewer->nextPtr = topCard;
+
+			(*hand)[i-1].nextPtr = topCard;
 		}
-		//if inserting at end of hand
 		else
 		{
-			hand[i].nextPtr = topCard;
+			printf("Error dealing card.\n");
 		}
+		
 	}
-	
+	//free(topCard);
 }
 
 void discardCard(Card* bottomOfDeck, Card* hand, int index)

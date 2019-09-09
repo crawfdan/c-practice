@@ -23,6 +23,15 @@ typedef enum
 	NumEnums
 }Score;
 
+typedef enum
+{
+	InvalidEnum = -1,
+	addToFront,
+	addToMiddle,
+	addToEnd,
+	NumEnums
+}dealPosition;
+
 typedef struct Card Card;
 
 struct Card{
@@ -34,6 +43,7 @@ struct Card{
 typedef struct{
 	Card hand[HAND_SIZE];
 	Score handScore;
+	int handSize;
 }Player;
 
 
@@ -43,7 +53,8 @@ typedef struct{
 void initializeDeck(Card* myDeck, char* faceNames[], char* suitNames[]);
 void printCards(Card* topCard);
 bool isEmpty(Card* topOfDeck);
-void dealCard(Card* topOfDeck, Card* hand, int handSize);
+void dealCard(Card** topOfDeck, Card** hand, int handSize);
 void discardCard(Card* bottomOfDeck, Card* hand, int index);
+int getFaceValue(char *str);
 
 #endif
