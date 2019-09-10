@@ -12,28 +12,26 @@ int main(void)
 	Player dealer;
 
 	//initialize data to NULL or 0
-	memset(&p1, 0, sizeof(p1));
+	memset(&p1, NULL, sizeof(p1));
 	memset(&dealer, 0, sizeof(dealer));
 
-	char* face[] = {"Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Jack", "Queen", "King", "Ace"};
 
-	char* suit[] = {"Hearts", "Diamonds", "Spades", "Clubs"};
+	// Card* headPtr = NULL;
+	// Card* tailPtr = NULL;
 
-	Card* headPtr = NULL;
-	Card* tailPtr = NULL;
-
-	Card* deck = {(Card*)calloc(DECK_SIZE, sizeof(Card))};
+	Card* deck = (Card*)calloc(DECK_SIZE, sizeof(Card));
 	//Card* pDeck = &deck[0];
 	Card* pHand = &p1.hand[0];
 	
 	/* seed rand() once */
 	srand(time(0));
-
-	initializeDeck(deck, face, suit);
+	int i;
+	//initialize the deck
+	initializeDeck(deck);
 	//test that the deck has been initialized correctly
 	printCards(deck);
+	printCards(pHand);
 
-	int i;
 	for (i = 0; i < HAND_SIZE; i++)
 	{
 		dealCard(&deck, &pHand, p1.handSize);
@@ -44,9 +42,9 @@ int main(void)
 	}
 
 	//printCards(pDeck);
-	printf("Your hand:\n"); 
-	printCards(pHand);
+	// printf("Your hand:\n");
+	// printCards(pHand);
 
-	free(deck);
+	//free(deck);
 	return 0;
 }
