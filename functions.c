@@ -20,7 +20,7 @@
 // Params myDeck: empty deck array
 // Param myFace[]: array of names of each face type
 // Params mySuit[]: array of names of each suit type
-void initializeDeck(Card* myDeck)
+void initializeDeck(Card* myDeck, Card** bottomOfDeck)
 {
 	assert(myDeck != NULL);
 
@@ -35,6 +35,11 @@ void initializeDeck(Card* myDeck)
 		if (i > 0)
 		{
 			myDeck[i-1].nextPtr = &(myDeck[i]);
+		}
+		if (i == DECK_SIZE-1)
+		{
+			myDeck[i].nextPtr = NULL;
+			*(bottomOfDeck) = &(myDeck[i]);
 		}
 	}
 
@@ -56,37 +61,29 @@ void initializeDeck(Card* myDeck)
 	}
 }
 
+Card* initializePlayer(Player** player)
+{
+	Card* handPointer;
+	(*player)->handScore = (Score)-1;
+	(*player)->handSize = 0;
+	handPointer = (*player)->hand;
+	handPointer = NULL;
+	return handPointer;
+}
+
 char* getFaceName(Face face)
 {
-	switch(face)
-	{
-		case Two: return "Two";
-		case Three: return "Three";
-		case Four: return "Four";
-		case Five: return "Five";
-		case Six: return "Six";
-		case Seven: return "Seven";
-		case Eight: return "Eight";
-		case Nine: return "Nine";
-		case Ten: return "Ten";
-		case Jack: return "Jack";
-		case Queen: return "Queen";
-		case King: return "King";
-		case Ace: return "Ace";
-		default: return "InvalidFace";
-	}
+	char* faces[] = {"Two", "Three", "Four", "Five", "Six", "Seven",
+					"Eight", "Nine", "Ten", "Jack", "Queen", "King", "Ace"};
+
+	return faces[face];
 }
 
 char* getSuitName(Suit suit)
 {
-	switch(suit)
-	{
-		case Hearts: return "Hearts";
-		case Diamonds: return "Diamonds";
-		case Spades: return "Spades";
-		case Clubs: return "Clubs";
-		default: return "InvalidSuit";
-	}
+	char* suits[] = {"Hearts", "Diamonds", "Spades", "Clubs"};
+	
+	return suits[suit];
 }
 
 // func name: printDeck
@@ -94,21 +91,20 @@ char* getSuitName(Suit suit)
 // Params myDeck: deck head pointer
 void printCards(Card* topCard)
 {
-	int i = 1;
-	if (topCard == NULL)
+	if (!topCard)
 	{
 		printf("The deck or hand is empty.\n\n");
 	}
 	else
 	{
 		Card* cardViewer = topCard;
+		int i = 1;
 		while(cardViewer != NULL)
 		{
 			printf("%d: %s of %s\n", i, getFaceName(cardViewer->face),
 										getSuitName(cardViewer->suit));
-			cardViewer = cardViewer->nextPtr;
-			i++;
-			
+			cardViewer = cardViewer->nextPtr;		
+			i++;	
 		}
 		return;
 	}
@@ -116,10 +112,10 @@ void printCards(Card* topCard)
 }
 
 
-bool isEmpty(Card* topOfDeck)
-{
-	return topOfDeck == NULL;
-}
+// bool isEmpty(Card* topOfDeck)
+// {
+// 	return topOfDeck == NULL;
+// }
 
 
 void dealCard(Card** topOfDeck, Card** hand, int handSize)
@@ -139,53 +135,72 @@ void dealCard(Card** topOfDeck, Card** hand, int handSize)
 	(*topOfDeck) = (*topOfDeck)->nextPtr;
 	topCard->nextPtr = NULL;
 	
-	Card* handViewer;
-	// int handValue = getFaceValue(handViewer->face);
-	// int topValue = getFaceValue(topCard->face)
-	if(*hand == NULL || (*hand)->face >= topCard->face)
+	//if the hand is empty
+	if (handSize == 0)
+	{
+		*hand = topCard;
+	}
+	//insert at front of hand
+	else if((*hand) == NULL || (*hand)->face >= topCard->face)
 	{
 		topCard->nextPtr = *hand;
 		*hand = topCard;
 	}
-	
+	//insert at middle or back of hand
 	else
 	{
-		handViewer = *hand;
+		Card* handViewer = *hand;
+		//find Card node before insertion
 		while (handViewer->nextPtr != NULL &&
 				handViewer->nextPtr->face < topCard->face)
 		{
 			handViewer = handViewer->nextPtr;
 		}
+		//insert at handViewer position
 		topCard->nextPtr = handViewer->nextPtr;
 		handViewer->nextPtr = topCard;
 	}
 	
 }
 
-// void discardCard(Card* bottomOfDeck, Card* hand, int index)
-// {
-// 	assert(index < HAND_SIZE);
-// 	assert(index >= 0);
-// 	assert(hand != NULL);
+void discardCard(Card** bottomOfDeck, Card** hand, int index, int handSize)
+{
+	assert(index < handSize);
+	assert(index >= 0);
+	assert(hand != NULL);
 
-// 	Card* tempCard = &hand[index];
+	//ptr to keep track of position in hand
+	Card* handPtr = *hand;
+	//card to be discarded
+	Card* temp;
 
-// 	//if removing from front of hand
-// 	if (index == 0)
-// 	{
-// 		hand = hand->nextPtr;
-// 	}
-// 	//if removing from middle
-// 	else if (hand[index].nextPtr != NULL)
-// 	{
-// 		hand[index - 1].nextPtr = tempCard->nextPtr;
-// 	}
-// 	//if removing from end
-// 	else
-// 	{
-// 		hand[index - 1].nextPtr = NULL;
-// 	}
-// 	//for all cases, place card at back of deck
-// 	tempCard->nextPtr = NULL;
-// 	bottomOfDeck->nextPtr = tempCard;
-// }
+	//if hand is empty or index out of range
+	if(!hand || index >= handSize)
+	{
+		return;
+	}
+	//if removing head
+	else if (index == 0)
+	{
+		temp = *hand;
+		*hand = handPtr->nextPtr;
+	}
+
+	else
+	{
+		//find pointer position of previous card to discard
+		int i;
+		for(i=0; handPtr != NULL && i < (index-1); i++)
+		{
+			handPtr = handPtr->nextPtr;
+		}
+		//save position of card after discarded card
+		Card* next = handPtr->nextPtr->nextPtr;
+		temp = handPtr->nextPtr;
+		handPtr->nextPtr = next;
+	}
+	
+	//place card at back of deck
+	temp->nextPtr = NULL;
+	(*bottomOfDeck)->nextPtr = temp;
+}

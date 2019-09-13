@@ -9,7 +9,7 @@
 
 typedef enum
 {
-	InvalidEnum = -1,
+	InvalidScore = -1,
 	highCard,
 	onePair,
 	twoPair,
@@ -20,7 +20,7 @@ typedef enum
 	fourOfKind,
 	straightFlush,
 	royalFlush,
-	NumEnums
+	NumScores
 }Score;
 
 typedef enum
@@ -77,14 +77,15 @@ typedef struct{
 
 
 /* function prototypes */
+Card* initializePlayer(Player** player);
 char* getSuitName(Suit suit);
 char* getFaceName(Face face);
 Card* addCard(char* face, char* suit);
-void initializeDeck(Card* myDeck);
+void initializeDeck(Card* myDeck, Card** bottomOfDeck);
 void printCards(Card* topCard);
 bool isEmpty(Card* topOfDeck);
 void dealCard(Card** topOfDeck, Card** hand, int handSize);
-void discardCard(Card* bottomOfDeck, Card* hand, int index);
+void discardCard(Card** bottomOfDeck, Card** hand, int index, int handSize);
 int getFaceValue(char *str);
 
 #endif

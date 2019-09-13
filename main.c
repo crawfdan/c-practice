@@ -8,43 +8,53 @@
 
 int main(void)
 {
-	Player p1;
-	Player dealer;
-
-	//initialize data to NULL or 0
-	memset(&p1, NULL, sizeof(p1));
-	memset(&dealer, 0, sizeof(dealer));
-
-
-	// Card* headPtr = NULL;
-	// Card* tailPtr = NULL;
-
+	Player* p1 = (Player*)calloc(1, sizeof(Player));
+	Player* dealer = (Player*)calloc(1, sizeof(Player));
 	Card* deck = (Card*)calloc(DECK_SIZE, sizeof(Card));
-	//Card* pDeck = &deck[0];
-	Card* pHand = &p1.hand[0];
+	Card* deckBottom;
+
+	Card* pHand = initializePlayer(&p1);
+	Card* dHand = initializePlayer(&dealer);
 	
 	/* seed rand() once */
 	srand(time(0));
 	int i;
 	//initialize the deck
-	initializeDeck(deck);
+	initializeDeck(deck, &deckBottom);
 	//test that the deck has been initialized correctly
 	printCards(deck);
-	printCards(pHand);
-
+	//deal 5 cards to each player
 	for (i = 0; i < HAND_SIZE; i++)
 	{
-		dealCard(&deck, &pHand, p1.handSize);
-		printf("-----------------------------------\n");
-		printCards(pHand);
-		printf("-----------------------------------\n");
-		p1.handSize++;
+		dealCard(&deck, &pHand, p1->handSize);
+		dealCard(&deck, &dHand, dealer->handSize);
+		p1->handSize++;
+		dealer->handSize++;
 	}
 
-	//printCards(pDeck);
-	// printf("Your hand:\n");
-	// printCards(pHand);
+	printf("\nDealer's hand:\n");
+	printf("-----------------------------------\n");
+	printCards(dHand);
+	printf("-----------------------------------\n");
 
-	//free(deck);
+	printf("\nYour hand:\n");
+	printf("-----------------------------------\n");
+	printCards(pHand);
+	printf("-----------------------------------\n");
+
+	int index = 0;
+	while(index < 1 || index > 5)
+	{
+		printf("Enter the number of the card you want to discard: ");
+		scanf("%d", &index);
+	}
+	index--;
+	discardCard(&deckBottom, &pHand, index, p1->handSize);
+
+	printf("\nYour hand:\n");
+	printf("-----------------------------------\n");
+	printCards(pHand);
+	printf("-----------------------------------\n");
+
 	return 0;
 }
