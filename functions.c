@@ -64,7 +64,12 @@ void initializeDeck(Card* myDeck, Card** bottomOfDeck)
 Card* initializePlayer(Player** player)
 {
 	Card* handPointer;
-	(*player)->handScore = (Score)-1;
+	int i;
+	for(i=0; i < SCORE_SIZE; i++)
+	{
+		(*player)->handScore[i] = (Score)-1;
+	}
+	
 	(*player)->handSize = 0;
 	handPointer = (*player)->hand;
 	handPointer = NULL;
@@ -203,4 +208,75 @@ void discardCard(Card** bottomOfDeck, Card** hand, int index, int handSize)
 	//place card at back of deck
 	temp->nextPtr = NULL;
 	(*bottomOfDeck)->nextPtr = temp;
+}
+
+//evaluates a player's hand, returns score of current hand
+void setHandScore(Player** player)
+{
+	Score score = InvalidScore;
+
+
+}
+
+Score checkFlushOrStraight(Player* player)
+{
+	assert(player->hand != NULL);
+
+	int faceCounter, suitCounter = 0;
+	Card* temp = player->hand;
+	//iterate through hand and count number of faces in order/suits matching
+	while(temp->nextPtr != NULL)
+	{
+		//if the next card is in order by face or loops from ace to two
+		if((temp->nextPtr->face = temp->face + 1) ||
+		(temp->face == Ace && temp->nextPtr->face == Two))
+		{
+			faceCounter++;
+		}
+		if(temp->suit == temp->nextPtr->suit)
+		{
+			suitCounter++;
+		}
+		temp = temp->nextPtr;
+	}
+	
+	//if the player has a straight
+	if(faceCounter==HAND_SIZE-1)
+	{
+		//check for straight flush
+		if(suitCounter==HAND_SIZE-1)
+		{
+			//check for royal flush
+			if(player->hand->face == Ten)
+			{
+				return royalFlush;
+			}
+			return straightFlush;
+		}
+		return straight;
+	}
+
+	//check for only a flush
+	else if(suitCounter==HAND_SIZE-1)
+	{
+		return flush;
+	}
+
+	return InvalidScore;
+}
+
+Score checktwoThreeFourKind(Player* player)
+{
+	assert(player->hand != NULL);
+	Card* temp = player->hand;
+	int counter = 0;
+
+	while(temp->nextPtr != NULL)
+	{
+		if(temp->face == temp->nextPtr->face)
+		{
+			counter++;
+		}
+	}
+	return InvalidScore;
 }

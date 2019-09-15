@@ -6,6 +6,7 @@
 
 #define NUM_FACES 13
 #define NUM_SUITS 4
+#define SCORE_SIZE 2
 
 typedef enum
 {
@@ -69,7 +70,8 @@ struct Card{
 
 typedef struct{
 	Card hand[HAND_SIZE];
-	Score handScore;
+	//Score stores a tuple; one for the score and one for highest card
+	Score handScore[SCORE_SIZE];
 	int handSize;
 }Player;
 
@@ -87,5 +89,6 @@ bool isEmpty(Card* topOfDeck);
 void dealCard(Card** topOfDeck, Card** hand, int handSize);
 void discardCard(Card** bottomOfDeck, Card** hand, int index, int handSize);
 int getFaceValue(char *str);
-
+void setHandScore(Player** player);
+Score checkFlushOrStraight(Player* player);
 #endif
