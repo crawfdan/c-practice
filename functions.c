@@ -5,16 +5,9 @@
 #include <string.h>
 #include "functions.h"
 
-// Card* addCard(char* face, char* suit)
-// {
-// 	Card* temp = (Card*)malloc(sizeof(Card));
-// 	temp->face = face;
-// 	temp->suit = suit;
-// 	temp->nextPtr = NULL;
-
-// 	return temp;
-// }
-
+const char* faces[] = {"Two", "Three", "Four", "Five", "Six", "Seven",
+					"Eight", "Nine", "Ten", "Jack", "Queen", "King", "Ace"};
+const char* suits[] = {"Hearts", "Diamonds", "Spades", "Clubs"};
 // func name: initializeDeck
 // Summary: Fills the empty deck array with cards in order
 // Params myDeck: empty deck array
@@ -29,8 +22,8 @@ void initializeDeck(Card* myDeck, Card** bottomOfDeck)
 	int i;
 	for (i = 0; i < DECK_SIZE; i++)
 	{
-		myDeck[i].face = (Face)(i % NUM_FACES);
-		myDeck[i].suit = (Suit)(i / NUM_FACES);
+		myDeck[i].face = (Face)(i % numFaces);
+		myDeck[i].suit = (Suit)(i / numFaces);
 
 		if (i > 0)
 		{
@@ -64,30 +57,22 @@ void initializeDeck(Card* myDeck, Card** bottomOfDeck)
 Card* initializePlayer(Player** player)
 {
 	Card* handPointer;
-	int i;
-	for(i=0; i < SCORE_SIZE; i++)
-	{
-		(*player)->handScore[i] = (Score)-1;
-	}
-	
-	(*player)->handSize = 0;
-	handPointer = (*player)->hand;
+	Player* temp = *player;
+	temp->handScore = invalidScore;
+	temp->highCard = invalidFace;
+	temp->handSize = 0;
+	handPointer = temp->hand;
 	handPointer = NULL;
 	return handPointer;
 }
 
-char* getFaceName(Face face)
+const char* getFaceName(Face face)
 {
-	char* faces[] = {"Two", "Three", "Four", "Five", "Six", "Seven",
-					"Eight", "Nine", "Ten", "Jack", "Queen", "King", "Ace"};
-
 	return faces[face];
 }
 
-char* getSuitName(Suit suit)
+const char* getSuitName(Suit suit)
 {
-	char* suits[] = {"Hearts", "Diamonds", "Spades", "Clubs"};
-	
 	return suits[suit];
 }
 
@@ -115,46 +100,43 @@ void printCards(Card* topCard)
 	}
 	
 }
-
-
-// bool isEmpty(Card* topOfDeck)
-// {
-// 	return topOfDeck == NULL;
-// }
-
-
-void dealCard(Card** topOfDeck, Card** hand, int handSize)
+bool dealCard(Card** topOfDeck, Card** hand, int handSize)
 {
 	assert((*topOfDeck) != NULL);
 	assert(handSize < HAND_SIZE);
 	assert(handSize >= 0);
 
+	Card* handViewer = *hand;
+
 	//if hand is full
 	if(handSize == HAND_SIZE)
 	{
-		return;
+		return false;
 	}
 
-	//temporary topCard stores head pointer
+	//temporary topCard stores top card on deck
 	Card* topCard = (*topOfDeck);
+	//point deck to the next card
 	(*topOfDeck) = (*topOfDeck)->nextPtr;
+	//cut off top card connection to deck
 	topCard->nextPtr = NULL;
 	
 	//if the hand is empty
 	if (handSize == 0)
 	{
-		*hand = topCard;
+		handViewer = topCard;
+		return true;
 	}
 	//insert at front of hand
-	else if((*hand) == NULL || (*hand)->face >= topCard->face)
+	else if(handViewer == NULL || handViewer->face >= topCard->face)
 	{
-		topCard->nextPtr = *hand;
-		*hand = topCard;
+		topCard->nextPtr = handViewer;
+		handViewer = topCard;
+		return true;
 	}
 	//insert at middle or back of hand
 	else
 	{
-		Card* handViewer = *hand;
 		//find Card node before insertion
 		while (handViewer->nextPtr != NULL &&
 				handViewer->nextPtr->face < topCard->face)
@@ -164,11 +146,13 @@ void dealCard(Card** topOfDeck, Card** hand, int handSize)
 		//insert at handViewer position
 		topCard->nextPtr = handViewer->nextPtr;
 		handViewer->nextPtr = topCard;
+		return true;
 	}
+	return false;
 	
 }
 
-void discardCard(Card** bottomOfDeck, Card** hand, int index, int handSize)
+bool discardCard(Card** bottomOfDeck, Card** hand, int index, int handSize)
 {
 	assert(index < handSize);
 	assert(index >= 0);
@@ -182,7 +166,7 @@ void discardCard(Card** bottomOfDeck, Card** hand, int index, int handSize)
 	//if hand is empty or index out of range
 	if(!hand || index >= handSize)
 	{
-		return;
+		return false;
 	}
 	//if removing head
 	else if (index == 0)
@@ -208,12 +192,13 @@ void discardCard(Card** bottomOfDeck, Card** hand, int index, int handSize)
 	//place card at back of deck
 	temp->nextPtr = NULL;
 	(*bottomOfDeck)->nextPtr = temp;
+	return true;
 }
 
 //evaluates a player's hand, returns score of current hand
 void setHandScore(Player** player)
 {
-	Score score = InvalidScore;
+	Score score = invalidScore;
 
 
 }
@@ -228,8 +213,8 @@ Score checkFlushOrStraight(Player* player)
 	while(temp->nextPtr != NULL)
 	{
 		//if the next card is in order by face or loops from ace to two
-		if((temp->nextPtr->face = temp->face + 1) ||
-		(temp->face == Ace && temp->nextPtr->face == Two))
+		if((temp->nextPtr->face = temp->face++) ||
+		(temp->face == ace && temp->nextPtr->face == two))
 		{
 			faceCounter++;
 		}
@@ -247,7 +232,7 @@ Score checkFlushOrStraight(Player* player)
 		if(suitCounter==HAND_SIZE-1)
 		{
 			//check for royal flush
-			if(player->hand->face == Ten)
+			if(player->hand->face == ten)
 			{
 				return royalFlush;
 			}
@@ -262,7 +247,7 @@ Score checkFlushOrStraight(Player* player)
 		return flush;
 	}
 
-	return InvalidScore;
+	return invalidScore;
 }
 
 Score checktwoThreeFourKind(Player* player)
@@ -278,5 +263,5 @@ Score checktwoThreeFourKind(Player* player)
 			counter++;
 		}
 	}
-	return InvalidScore;
+	return invalidScore;
 }

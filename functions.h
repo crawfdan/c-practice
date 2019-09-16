@@ -4,13 +4,11 @@
 #define DECK_SIZE 52
 #define HAND_SIZE 5
 
-#define NUM_FACES 13
-#define NUM_SUITS 4
 #define SCORE_SIZE 2
 
 typedef enum
 {
-	InvalidScore = -1,
+	invalidScore = -1,
 	highCard,
 	onePair,
 	twoPair,
@@ -26,29 +24,31 @@ typedef enum
 
 typedef enum
 {
-	InvalidFace = -1,
-	Two,
-	Three,
-	Four,
-	Five,
-	Six,
-	Seven,
-	Eight,
-	Nine,
-	Ten,
-	Jack,
-	Queen,
-	King,
-	Ace
+	invalidFace = -1,
+	two,
+	three,
+	four,
+	five,
+	six,
+	seven,
+	eight,
+	nine,
+	ten,
+	jack,
+	queen,
+	king,
+	ace,
+	numFaces
 }Face;
 
 typedef enum
 {
-	InvalidSuit = -1,
-	Hearts,
-	Diamonds,
-	Spades,
-	Clubs
+	invalidSuit = -1,
+	hearts,
+	diamonds,
+	spades,
+	clubs,
+	numSuits
 }Suit;
 
 // typedef enum
@@ -71,7 +71,8 @@ struct Card{
 typedef struct{
 	Card hand[HAND_SIZE];
 	//Score stores a tuple; one for the score and one for highest card
-	Score handScore[SCORE_SIZE];
+	Score handScore;
+	Face highCard;
 	int handSize;
 }Player;
 
@@ -80,14 +81,13 @@ typedef struct{
 
 /* function prototypes */
 Card* initializePlayer(Player** player);
-char* getSuitName(Suit suit);
-char* getFaceName(Face face);
+const char* getSuitName(Suit suit);
+const char* getFaceName(Face face);
 Card* addCard(char* face, char* suit);
 void initializeDeck(Card* myDeck, Card** bottomOfDeck);
 void printCards(Card* topCard);
-bool isEmpty(Card* topOfDeck);
-void dealCard(Card** topOfDeck, Card** hand, int handSize);
-void discardCard(Card** bottomOfDeck, Card** hand, int index, int handSize);
+bool dealCard(Card** topOfDeck, Card** hand, int handSize);
+bool discardCard(Card** bottomOfDeck, Card** hand, int index, int handSize);
 int getFaceValue(char *str);
 void setHandScore(Player** player);
 Score checkFlushOrStraight(Player* player);
