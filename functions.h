@@ -123,7 +123,7 @@ static stateTransMatrixRow_t stateTransMatrix[] = {
 
 typedef struct {
 	const char* name;
-	void (*func)(void);
+	Event_t (*func)(Card,Card);
 } stateFunctionRow_t;
 
 
