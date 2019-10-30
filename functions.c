@@ -199,7 +199,8 @@ void processHand(Card* yourHand)
 {
 	assert (yourHand != NULL);
 	Event_t event = ev_nextCard;
-	stateMachine_t *SMT = &stateTransMatrix[0];
+	stateMachine_t *SMT;
+	SMT->currState = st_highCard;
 
 	//state
 
@@ -209,8 +210,11 @@ void processHand(Card* yourHand)
 		yourHand = yourHand->nextPtr;
 		Card currCard = *yourHand;
 
+		//Call state function
+		event = stateFunction[SMT->currState].func(currCard, prevCard);
+
 		int i;
-		for(i=0; i < sizeof(stateTransMatrix)/sizeof(stateTransMatrix[0]); i++)
+		for(i=0; i < num_states; i++)
 		{
 			if(stateTransMatrix[i].currentState == SMT->currState)
 			{
@@ -218,9 +222,6 @@ void processHand(Card* yourHand)
 				{
 					//Transition to next state
 					SMT->currState = stateTransMatrix[i].nextState;
-
-					//Call state function
-					(Event_t *)stateFunction[SMT->currState].func(currCard, prevCard);
 					break;
 				}
 			}
@@ -235,7 +236,7 @@ Event_t func_highCard(Card currCard, Card prevCard)
 	Event_t result = (currCard.face == prevCard.face) ? ev_matchPair:ev_nextCard;
 
 	//check pair for a straight
-	if (currCard.face == prevCard.face++)
+	if (currCard.face == prevCard.face+1)
 	{
 		straightCounter++;
 
@@ -256,7 +257,7 @@ Event_t func_highCard(Card currCard, Card prevCard)
 			flushCounter = 0;
 		}
 
-		else if(result = ev_matchStraightFlush && currCard.face == ace)
+		else if(result == ev_matchStraightFlush && currCard.face == ace)
 		{
 			result = ev_matchRoyalFlush;
 		}

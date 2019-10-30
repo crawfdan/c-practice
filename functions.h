@@ -80,7 +80,8 @@ typedef enum {
 	st_fullHouse,
 	st_fourOfKind,
 	st_straightFlush,
-	st_royalFlush
+	st_royalFlush,
+	num_states
 } State_t;
 
 typedef enum {
@@ -123,7 +124,7 @@ static stateTransMatrixRow_t stateTransMatrix[] = {
 
 typedef struct {
 	const char* name;
-	void (*func)(void);
+	Event_t (*func)(Card, Card);
 } stateFunctionRow_t;
 
 
@@ -163,7 +164,7 @@ static stateFunctionRow_t stateFunction[] = {
 	{"st_fourOfKind",		&func_fourOfKind},
 	{"st_straightFlush",	&func_done},	
 	{"st_royalFlush",		&func_done},
-
+	{NULL,					NULL}
 };
 
 
