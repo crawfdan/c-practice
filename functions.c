@@ -195,73 +195,134 @@ bool discardCard(Card** bottomOfDeck, Card** hand, int index, int handSize)
 	return true;
 }
 
-//evaluates a player's hand, returns score of current hand
-void setHandScore(Player** player)
+void processHand(Card* yourHand)
 {
-	Score score = invalidScore;
+	assert (yourHand != NULL);
+	Event_t event = ev_nextCard;
+	stateMachine_t *SMT = &stateTransMatrix[0];
 
+	//state
 
-}
-
-Score checkFlushOrStraight(Player* player)
-{
-	assert(player->hand != NULL);
-
-	int faceCounter, suitCounter = 0;
-	Card* temp = player->hand;
-	//iterate through hand and count number of faces in order/suits matching
-	while(temp->nextPtr != NULL)
+	while(yourHand->nextPtr != NULL)
 	{
-		//if the next card is in order by face or loops from ace to two
-		if((temp->nextPtr->face = temp->face++) ||
-		(temp->face == ace && temp->nextPtr->face == two))
+		Card prevCard = *yourHand;
+		yourHand = yourHand->nextPtr;
+		Card currCard = *yourHand;
+
+		int i;
+		for(i=0; i < sizeof(stateTransMatrix)/sizeof(stateTransMatrix[0]); i++)
 		{
-			faceCounter++;
-		}
-		if(temp->suit == temp->nextPtr->suit)
-		{
-			suitCounter++;
-		}
-		temp = temp->nextPtr;
-	}
-	
-	//if the player has a straight
-	if(faceCounter==HAND_SIZE-1)
-	{
-		//check for straight flush
-		if(suitCounter==HAND_SIZE-1)
-		{
-			//check for royal flush
-			if(player->hand->face == ten)
+			if(stateTransMatrix[i].currentState == SMT->currState)
 			{
-				return royalFlush;
+				if(stateTransMatrix[i].event == event)
+				{
+					//Transition to next state
+					SMT->currState = stateTransMatrix[i].nextState;
+
+					//Call state function
+					(Event_t *)stateFunction[SMT->currState].func(currCard, prevCard);
+					break;
+				}
 			}
-			return straightFlush;
 		}
-		return straight;
 	}
-
-	//check for only a flush
-	else if(suitCounter==HAND_SIZE-1)
-	{
-		return flush;
-	}
-
-	return invalidScore;
 }
 
-Score checktwoThreeFourKind(Player* player)
+Event_t func_highCard(Card currCard, Card prevCard)
 {
-	assert(player->hand != NULL);
-	Card* temp = player->hand;
-	int counter = 0;
+	static int flushCounter, straightCounter = 0;
+	//if faces match, return onePair event
+	Event_t result = (currCard.face == prevCard.face) ? ev_matchPair:ev_nextCard;
 
-	while(temp->nextPtr != NULL)
+	//check pair for a straight
+	if (currCard.face == prevCard.face++)
 	{
-		if(temp->face == temp->nextPtr->face)
+		straightCounter++;
+
+		if(straightCounter == HAND_SIZE - 1)
 		{
-			counter++;
+			result = ev_matchStraight;
+			straightCounter = 0;
 		}
 	}
-	return invalidScore;
+	//check pair for a flush
+	else if (currCard.suit == prevCard.suit)
+	{
+		flushCounter++;
+
+		if(flushCounter == HAND_SIZE-1 && result == ev_matchStraight)
+		{
+			result = ev_matchStraightFlush;
+			flushCounter = 0;
+		}
+
+		else if(result = ev_matchStraightFlush && currCard.face == ace)
+		{
+			result = ev_matchRoyalFlush;
+		}
+
+		else if(flushCounter == HAND_SIZE - 1)
+		{
+			result = ev_matchStraight;
+			flushCounter = 0;
+		}
+	}
+	return result;
+}
+
+Event_t func_onePair(Card currCard, Card prevCard)
+{
+	Event_t result = ev_none;
+	static bool visited = false;
+
+	if(prevCard.face == currCard.face)
+	{
+		//twoPair if you have visited this state, three of a kind if not
+		result = visited ? ev_matchSecondPair:ev_matchThreeOfKind;
+		visited = false;
+	}
+
+	else
+	{
+		result = ev_nextCard;
+		visited = true;
+	}
+	return result;
+}
+
+Event_t func_twoPair(Card currCard, Card prevCard)
+{
+	//if result matches, you have 3 of a kind as last card
+	Event_t result = (currCard.face == prevCard.face) ? ev_matchThreeOfKind:ev_nextCard;
+	return result;
+}
+
+Event_t func_threeOfKind(Card currCard, Card prevCard)
+{
+	Event_t result = ev_none;
+	static bool visited = false;
+
+	if(prevCard.face == currCard.face)
+	{
+		//full house if you have visited this state, four of a kind if not
+		result = visited ? ev_matchSecondPair:ev_matchFourOfKind;
+		visited = false;
+	}
+
+	else
+	{
+		result = ev_nextCard;
+		visited = true;
+	}
+	return result;
+}
+
+Event_t func_fourOfKind(Card currCard, Card prevCard)
+{
+	return ev_nextCard;
+}
+
+Event_t func_done(Card currCard, Card prevCard)
+{
+	return ev_none;
 }
